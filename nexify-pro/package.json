@@ -1,0 +1,14 @@
+{
+  "name": "nexify-pro-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "api": "cd api && node index.js",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run api\" \"npm run client\"",
+    "install-all": "npm install --prefix api && npm install --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
