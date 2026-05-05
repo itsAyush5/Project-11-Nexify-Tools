@@ -43,6 +43,18 @@ async function execute(jobId, fileId, targetFormat, jobs) {
 
     // ─── ENGINE 2: Jimp for image-to-image (offline, no API key needed) ──────
     if (IMAGE_EXTS.includes(inputExt) && IMAGE_EXTS.includes(outExt)) {
+      if (outExt === 'svg') {
+        console.log(`[NexConvert] Using Potrace engine for image-to-SVG (offline).`);
+        const imageTools = require('../engines/imageTools');
+        job.progress = 30;
+        await imageTools.traceToSvg(inputPath, outputPath);
+        job.progress = 100;
+        job.status = 'completed';
+        job.outputPath = outputPath;
+        console.log(`[NexConvert] Job ${jobId} COMPLETED via Potrace.`);
+        return;
+      }
+
       console.log(`[NexConvert] Using Jimp image engine (offline).`);
       const Jimp = require('jimp');
       job.progress = 30;
@@ -56,7 +68,19 @@ async function execute(jobId, fileId, targetFormat, jobs) {
       return;
     }
 
-    // ─── ENGINE 3: PDF Tools for image-to-PDF (offline) ───────────────────────
+    // ─── ENGINE 3: PDF Tools for image-to-PDF or PDF-to-Image (offline) ──────
+    if (inputExt === 'pdf' && IMAGE_EXTS.includes(outExt)) {
+        console.log(`[NexConvert] Using imageTools for PDF-to-Image (offline).`);
+        const imageTools = require('../engines/imageTools');
+        job.progress = 40;
+        await imageTools.pdfToImage(inputPath, outputPath, outExt);
+        job.progress = 100;
+        job.status = 'completed';
+        job.outputPath = outputPath;
+        console.log(`[NexConvert] Job ${jobId} COMPLETED via imageTools.`);
+        return;
+    }
+
     if (IMAGE_EXTS.includes(inputExt) && outExt === 'pdf') {
       console.log(`[NexConvert] Using PDF engine for image-to-PDF (offline).`);
       const pdfTools = require('./pdfTools');

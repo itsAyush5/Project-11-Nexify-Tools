@@ -193,7 +193,7 @@ function canHandle(inputExt, outputExt) {
   const inp = inputExt.replace('.', '').toLowerCase();
   const out = outputExt.replace('.', '').toLowerCase();
 
-  const isTextIn = DATA_EXTS.includes(inp) || TEXT_EXTS.includes(inp) || CODE_EXTS.includes(inp);
+  const isTextIn = DATA_EXTS.includes(inp) || TEXT_EXTS.includes(inp) || CODE_EXTS.includes(inp) || inp === 'docx';
   const isTextOut = DATA_EXTS.includes(out) || TEXT_EXTS.includes(out) || CODE_EXTS.includes(out) || out === 'pdf';
 
   if (isTextIn && isTextOut) return true;
@@ -201,10 +201,26 @@ function canHandle(inputExt, outputExt) {
   return false;
 }
 
-async function convert(inputPath, outputPath, inputExt, outputExt) {
-  const inp = inputExt.replace('.', '').toLowerCase();
-  const out = outputExt.replace('.', '').toLowerCase();
-  const text = readText(inputPath);
+  // ── Word (DOCX) → PDF / HTML (Offline!) ──────────────────────────────────
+  if (inp === 'docx') {
+    const mammoth = require('mammoth');
+    if (out === 'pdf') {
+      const result = await mammoth.convertToHtml({ path: inputPath });
+      const pdfBytes = await textToPdf(result.value.replace(/<[^>]*>/g, '\n'), path.basename(inputPath));
+      fs.writeFileSync(outputPath, pdfBytes);
+      return;
+    }
+    if (out === 'html') {
+      const result = await mammoth.convertToHtml({ path: inputPath });
+      writeText(outputPath, result.value);
+      return;
+    }
+    if (out === 'txt') {
+        const result = await mammoth.extractRawText({ path: inputPath });
+        writeText(outputPath, result.value);
+        return;
+    }
+  }
 
   // ── Any Text → PDF (Offline!) ──────────────────────────────────────────────
   if (out === 'pdf') {
