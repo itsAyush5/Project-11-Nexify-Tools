@@ -6,7 +6,6 @@ import {
   AlertCircle, CheckCircle, FileText, 
   ChevronRight
 } from 'lucide-react';
-import * as mockEngine from './services/mockEngine';
 import PdfTools from './components/PdfTools';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
@@ -83,9 +82,14 @@ const App = () => {
       try {
         const { data } = await axios.post(`${API_BASE}/analyze`, formData, { timeout: 15000 });
         setAnalysis(data); setLoading(false); return;
-      } catch (err) { console.warn('Backend analyze failed', err.message); }
+      } catch (err) { 
+        setErrorMsg('Backend is waking up or busy. Please try again in a few seconds.');
+        setLoading(false);
+      }
+    } else {
+      setErrorMsg('The Nexify Engine is currently offline. Please wait for the green indicator.');
+      setLoading(false);
     }
-    setTimeout(() => { setAnalysis(mockEngine.simulateAnalysis(selectedFile)); setLoading(false); }, 500);
   };
 
   /* ── Conversion ── */
@@ -97,20 +101,14 @@ const App = () => {
       try {
         const { data } = await axios.post(`${API_BASE}/convert`, { fileId: analysis.fileId, targetFormat }, { timeout: 10000 });
         setJobId(data.jobId); setLoading(false); return;
-      } catch (err) { setErrorMsg('Backend conversion failed. Using local simulation.'); }
+      } catch (err) { 
+        setErrorMsg('Backend conversion failed. The server might be under heavy load.');
+        setLoading(false);
+      }
+    } else {
+      setErrorMsg('Cannot start conversion: Backend is offline.');
+      setLoading(false);
     }
-
-    // Local simulation — run async in background, don't block UI
-    const mockId = 'mock-' + Math.random().toString(36).substr(2, 9);
-    setJobId(mockId);
-    setStatus('processing');
-    setLoading(false);
-
-    // Kick off simulation without awaiting so state updates flow through React
-    mockEngine.simulateConversion(mockId, targetFormat, (p) => {
-      setProgress(p);
-      if (p === 100) setStatus('completed');
-    });
   };
 
   /* ── Poll job status ── */
@@ -131,61 +129,20 @@ const App = () => {
 
   /* ── Download ── */
   const handleDownload = () => {
+    if (!jobId || jobId.startsWith('mock-')) {
+      setErrorMsg('Cannot download: This was a simulated conversion. Please wait for the backend to be online.');
+      return;
+    }
+
     const baseName = file.name.split('.').slice(0, -1).join('.');
     const outName  = `${baseName}.${selectedFormat.toLowerCase()}`;
     
-    // If backend is online and the job isn't a local simulation, download directly via browser
-    if (backendOnline && jobId && !jobId.startsWith('mock-')) {
-      const a = document.createElement('a');
-      a.href = `${API_BASE}/download/${jobId}`;
-      a.download = outName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      return; // Do NOT fall through to mock logic
-    }
-    
-    // ── Local Mock Simulator (Only used when disconnected from Backend) ──
-    try {
-      const format = selectedFormat.toLowerCase();
-      let blob;
-      const { jspdf } = window;
-      if (format === 'pdf' && jspdf) {
-        const doc = new jspdf.jsPDF();
-        doc.setFontSize(20); doc.text('Nexify Tools: Converted Document', 20, 30);
-        doc.setFontSize(12);
-        doc.text(`Source: ${file.name}`, 20, 50);
-        doc.text(`Format: ${format.toUpperCase()}`, 20, 60);
-        doc.text(`Date: ${new Date().toLocaleString()}`, 20, 70);
-        blob = doc.output('blob');
-      } else if (['jpg','jpeg','png','webp','gif','bmp'].includes(format)) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 800; canvas.height = 600;
-        const ctx = canvas.getContext('2d');
-        const g = ctx.createLinearGradient(0, 0, 800, 600);
-        g.addColorStop(0, '#1a1a2e'); g.addColorStop(1, '#16213e');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, 800, 600);
-        ctx.fillStyle = '#6366f1'; ctx.font = 'bold 36px sans-serif'; ctx.fillText('NEXIFY TOOLS', 50, 200);
-        ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '20px sans-serif';
-        ctx.fillText(`${file.name} → ${format.toUpperCase()}`, 50, 260);
-        const mime = format === 'jpg' || format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
-        canvas.toBlob((b) => {
-          const url = URL.createObjectURL(b);
-          const a = document.createElement('a'); a.href = url; a.download = outName;
-          document.body.appendChild(a); a.click(); document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, mime, 0.95);
-        return;
-      } else {
-        blob = new Blob([`[Nexify Tools]\nSource: ${file.name}\nFormat: ${format}\nDate: ${new Date().toLocaleString()}`], { type: 'text/plain' });
-      }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = outName;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Mock download failed', err);
-    }
+    const a = document.createElement('a');
+    a.href = `${API_BASE}/download/${jobId}`;
+    a.download = outName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const reset = () => {

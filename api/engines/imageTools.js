@@ -26,10 +26,20 @@ async function traceToSvg(inputPath, outputPath) {
 }
 
 /**
- * PDF to Image conversion (DISABLED temporarily for Render compatibility)
+ * PDF to Image conversion using FFmpeg (Stable & Cloud-Safe)
  */
 async function pdfToImage(inputPath, outputPath, format = 'png') {
-  throw new Error('PDF to Image conversion is temporarily disabled for system maintenance.');
+  const ffmpeg = require('fluent-ffmpeg');
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputPath)
+      .output(outputPath)
+      .on('end', resolve)
+      .on('error', (err) => {
+        console.error('[pdfToImage] FFmpeg Error:', err.message);
+        reject(new Error('Failed to render PDF page. Make sure the file is not password protected.'));
+      })
+      .run();
+  });
 }
 
 module.exports = { traceToSvg, pdfToImage };
