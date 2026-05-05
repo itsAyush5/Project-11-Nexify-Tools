@@ -1,7 +1,5 @@
 # Nexify Tools — Premium File Conversion & PDF Engine
 
-![Nexify Tools Banner](https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop)
-
 Nexify Tools is a high-performance, full-stack file conversion and PDF editing platform. Designed for both end-users and developers, it provides a seamless interface for transforming files across hundreds of formats and a robust suite of professional PDF manipulation tools.
 
 ## ✨ Key Features
@@ -34,7 +32,6 @@ Nexify Tools is a high-performance, full-stack file conversion and PDF editing p
   - `jimp` for image processing.
   - `fluent-ffmpeg` for media handling.
   - `adm-zip` for archive management.
-  - `CloudConvert API` integration for complex document transformations.
 
 ## 📦 Getting Started
 
