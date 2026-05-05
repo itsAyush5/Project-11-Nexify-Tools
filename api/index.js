@@ -25,8 +25,10 @@ const port = process.env.PORT || 5000;
 // Essential middleware for Auth/API
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: [FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true
 }));
 
@@ -491,7 +493,7 @@ app.post('/api/auth/login', (req, res, next) => {
 app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/api/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
-  res.redirect('http://localhost:5173'); // Redirect back to frontend
+  res.redirect(FRONTEND_URL); // Redirect back to frontend
 });
 
 app.get('/api/auth/logout', (req, res) => {
