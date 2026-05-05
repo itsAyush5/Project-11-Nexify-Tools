@@ -26,20 +26,10 @@ async function traceToSvg(inputPath, outputPath) {
 }
 
 /**
- * PDF to Image conversion
- * Converts PDF pages to JPG/PNG
+ * PDF to Image conversion (DISABLED temporarily for Render compatibility)
  */
 async function pdfToImage(inputPath, outputPath, format = 'png') {
-  // Using pdf-img-convert (pure JS implementation)
-  const pdfImgConvert = require('pdf-img-convert');
-  const outputImages = await pdfImgConvert.convert(inputPath);
-  
-  // For now, we take the first page as the primary output
-  if (outputImages.length > 0) {
-    fs.writeFileSync(outputPath, outputImages[0]);
-  } else {
-    throw new Error('No pages found in PDF');
-  }
+  throw new Error('PDF to Image conversion is temporarily disabled for system maintenance.');
 }
 
 module.exports = { traceToSvg, pdfToImage };
