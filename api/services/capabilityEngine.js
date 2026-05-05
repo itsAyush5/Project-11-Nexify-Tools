@@ -67,18 +67,18 @@ const FORMAT_CATEGORIES = {
 
 // ── Cross-category rules ────────────────────────────────────────────────────
 const CROSS_CATEGORY_RULES = {
-  image:        ['image', 'document', 'vector'],
-  video:        ['video', 'audio'],
-  audio:        ['audio'],
-  document:     ['document', 'image', 'ebook', 'code'],
-  data:         ['data', 'document', 'spreadsheet'],
-  archive:      ['archive'],
-  spreadsheet:  ['spreadsheet', 'data', 'document'],
+  image: ['image', 'document', 'vector'],
+  video: ['video', 'audio'],
+  audio: ['audio'],
+  document: ['document', 'image', 'ebook', 'code'],
+  data: ['data', 'document', 'spreadsheet'],
+  archive: ['archive'],
+  spreadsheet: ['spreadsheet', 'data', 'document'],
   presentation: ['presentation', 'document', 'image'],
-  ebook:        ['ebook', 'document'],
-  font:         ['font'],
-  code:         ['code', 'document'],
-  vector:       ['vector', 'image'],
+  ebook: ['ebook', 'document'],
+  font: ['font'],
+  code: ['code', 'document'],
+  vector: ['vector', 'image'],
 };
 
 
@@ -142,7 +142,7 @@ function getAvailableOutputs(inputFormat) {
       seen.add(fmt);
       results.push({
         format: fmt,        // e.g. ".png"
-        path:   `${ext} → ${fmt}`,
+        path: `${ext} → ${fmt}`,
       });
     }
   }

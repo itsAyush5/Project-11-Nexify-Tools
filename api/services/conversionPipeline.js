@@ -70,15 +70,15 @@ async function execute(jobId, fileId, targetFormat, jobs) {
 
     // ─── ENGINE 3: PDF Tools for image-to-PDF or PDF-to-Image (offline) ──────
     if (inputExt === 'pdf' && IMAGE_EXTS.includes(outExt)) {
-        console.log(`[NexConvert] Using imageTools for PDF-to-Image (offline).`);
-        const imageTools = require('../engines/imageTools');
-        job.progress = 40;
-        await imageTools.pdfToImage(inputPath, outputPath, outExt);
-        job.progress = 100;
-        job.status = 'completed';
-        job.outputPath = outputPath;
-        console.log(`[NexConvert] Job ${jobId} COMPLETED via imageTools.`);
-        return;
+      console.log(`[NexConvert] Using imageTools for PDF-to-Image (offline).`);
+      const imageTools = require('../engines/imageTools');
+      job.progress = 40;
+      await imageTools.pdfToImage(inputPath, outputPath, outExt);
+      job.progress = 100;
+      job.status = 'completed';
+      job.outputPath = outputPath;
+      console.log(`[NexConvert] Job ${jobId} COMPLETED via imageTools.`);
+      return;
     }
 
     if (IMAGE_EXTS.includes(inputExt) && outExt === 'pdf') {
