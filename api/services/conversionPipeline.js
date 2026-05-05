@@ -116,9 +116,11 @@ async function execute(jobId, fileId, targetFormat, jobs) {
         console.log(`[NexConvert] Job ${jobId} COMPLETED via CloudConvert fallback.`);
         return;
       }
+      
+      throw new Error('The Pro Engine encountered an error with this specific file.');
     }
 
-    throw new Error('All conversion engines failed. Please verify the file format.');
+    throw new Error('Local engine reached its limit and the Cloud API Key is not configured. Please add CLOUDCONVERT_API_KEY to your Render Environment Variables to support this file type.');
 
   } catch (error) {
     console.error(`[NexConvert] Job ${jobId} FATAL ERROR:`, error.message);

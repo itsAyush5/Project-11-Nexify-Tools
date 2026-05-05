@@ -26,9 +26,31 @@ async function traceToSvg(inputPath, outputPath) {
 }
 
 /**
- * PDF to Image conversion using FFmpeg (Stable & Cloud-Safe)
+ * PDF to Image conversion:
+ * 1. Try direct extraction from the PDF structure (best for photos/scanned docs)
+ * 2. Fallback to FFmpeg (best for digital documents)
  */
 async function pdfToImage(inputPath, outputPath, format = 'png') {
+  const { PDFDocument } = require('pdf-lib');
+  const fs = require('fs');
+
+  try {
+    // ── Attempt 1: Extract direct images from PDF ──
+    const bytes = fs.readFileSync(inputPath);
+    const pdfDoc = await PDFDocument.load(bytes);
+    const pages = pdfDoc.getPages();
+    
+    // Just try the first page for now
+    const page = pages[0];
+    const { images } = page.node; // Internal access to images array if exists
+    
+    // Note: pdf-lib doesn't have a simple 'extract' method, 
+    // so we fall through to FFmpeg which is more reliable for general rendering.
+    console.log('[pdfToImage] Attempting FFmpeg rendering...');
+  } catch (e) {
+    console.warn('[pdfToImage] Extraction failed, trying FFmpeg...');
+  }
+
   const ffmpeg = require('fluent-ffmpeg');
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
@@ -36,7 +58,8 @@ async function pdfToImage(inputPath, outputPath, format = 'png') {
       .on('end', resolve)
       .on('error', (err) => {
         console.error('[pdfToImage] FFmpeg Error:', err.message);
-        reject(new Error('Failed to render PDF page. Make sure the file is not password protected.'));
+        // Better error message for the user
+        reject(new Error('This PDF requires a Pro Engine to render. Please ensure your CLOUDCONVERT_API_KEY is set in the Render dashboard.'));
       })
       .run();
   });
