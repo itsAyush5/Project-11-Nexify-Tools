@@ -200,6 +200,10 @@ function canHandle(inputExt, outputExt) {
 
   return false;
 }
+async function convert(inputPath, outputPath, inputExt, outputExt) {
+  const inp = inputExt.replace('.', '').toLowerCase();
+  const out = outputExt.replace('.', '').toLowerCase();
+  const text = readText(inputPath);
 
   // ── Word (DOCX) → PDF / HTML (Offline!) ──────────────────────────────────
   if (inp === 'docx') {
