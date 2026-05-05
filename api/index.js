@@ -556,7 +556,7 @@ app.listen(port, () => {
     capabilityEngine.initialize();
     console.log('Capability Engine Ready');
   } catch (e) {
-    console.error('Capability Engine Failed', e);
+    console.error('Capability Engine Failed to Initialize, but server is staying online:', e.message);
   }
   console.log(`NexConvert API fully running on port ${port}`);
 });

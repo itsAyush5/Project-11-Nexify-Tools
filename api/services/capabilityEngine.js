@@ -150,9 +150,42 @@ function getAvailableOutputs(inputFormat) {
   return results;
 }
 
+/**
+ * Checks if a specific conversion is supported by local engines.
+ */
+function isLocallySupported(inputExt, outputExt) {
+  const inp = inputExt.replace('.', '').toLowerCase();
+  const out = outputExt.replace('.', '').toLowerCase();
+
+  const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif', 'webp', 'svg'];
+  const DATA_EXTS = ['json', 'yaml', 'yml', 'toml', 'csv', 'tsv', 'xml', 'ndjson', 'jsonl', 'geojson', 'ini'];
+  const TEXT_EXTS = ['txt', 'md', 'html', 'htm', 'rst', 'tex', 'abw', 'docx'];
+  const CODE_EXTS = ['js', 'ts', 'jsx', 'tsx', 'py', 'rb', 'php', 'java', 'c', 'cpp', 'cs', 'go', 'rs', 'swift', 'kt', 'sql', 'sh', 'bat', 'ps1', 'css', 'scss', 'sass', 'less', 'vue', 'svelte'];
+
+  // Image to Image (Jimp)
+  if (IMAGE_EXTS.includes(inp) && IMAGE_EXTS.includes(out)) return true;
+
+  // Image to PDF (pdfTools)
+  if (IMAGE_EXTS.includes(inp) && out === 'pdf') return true;
+  
+  // PDF to Image (pdfTools)
+  if (inp === 'pdf' && IMAGE_EXTS.includes(out)) return true;
+
+  // Text/Code/Data to Text/Code/Data/PDF (localConvert)
+  const isTextIn = DATA_EXTS.includes(inp) || TEXT_EXTS.includes(inp) || CODE_EXTS.includes(inp);
+  const isTextOut = DATA_EXTS.includes(out) || TEXT_EXTS.includes(out) || CODE_EXTS.includes(out) || out === 'pdf';
+  if (isTextIn && isTextOut) return true;
+
+  // Video/Audio extraction (fluent-ffmpeg)
+  if (FORMAT_CATEGORIES.video.includes('.' + inp) && FORMAT_CATEGORIES.audio.includes('.' + out)) return true;
+
+  return false;
+}
+
 module.exports = {
   initialize,
   getAvailableOutputs,
   EXT_TO_CATEGORY,
   FORMAT_CATEGORIES,
+  isLocallySupported
 };

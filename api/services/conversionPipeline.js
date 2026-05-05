@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const cloudConvert = require('../engines/cloudConvert');
 const localConvert = require('../engines/localConvert');
+const capabilityEngine = require('./capabilityEngine');
 
 // Image extensions Jimp can handle natively (no API needed)
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif', 'webp'];
@@ -93,7 +94,32 @@ async function execute(jobId, fileId, targetFormat, jobs) {
       return;
     }
 
-    // ─── ENGINE 4: CloudConvert for everything else ───────────────────────────
+    // ─── ENGINE 4: FFmpeg for Video/Audio (offline) ──────────────────────────
+    const VIDEO_AUDIO_EXTS = [...capabilityEngine.FORMAT_CATEGORIES.video, ...capabilityEngine.FORMAT_CATEGORIES.audio].map(e => e.replace('.',''));
+    if (VIDEO_AUDIO_EXTS.includes(inputExt) && VIDEO_AUDIO_EXTS.includes(outExt)) {
+        console.log(`[NexConvert] Using FFmpeg for media conversion (offline).`);
+        const ffmpeg = require('fluent-ffmpeg');
+        job.progress = 20;
+        
+        await new Promise((resolve, reject) => {
+            ffmpeg(inputPath)
+                .output(outputPath)
+                .on('progress', (p) => {
+                    job.progress = Math.min(95, 20 + Math.floor(p.percent || 0));
+                })
+                .on('end', resolve)
+                .on('error', reject)
+                .run();
+        });
+
+        job.progress = 100;
+        job.status = 'completed';
+        job.outputPath = outputPath;
+        console.log(`[NexConvert] Job ${jobId} COMPLETED via FFmpeg.`);
+        return;
+    }
+
+    // ─── ENGINE 5: CloudConvert for everything else ───────────────────────────
     if (cloudConvert.isConfigured) {
       console.log(`[NexConvert] Routing to CloudConvert engine...`);
       job.progress = 15;
