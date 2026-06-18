@@ -135,12 +135,20 @@ async function insertPages(basePath, insertPath, outputPath, position) {
 // SIGN: embed a signature image into a PDF at a specific page and position
 async function sign(inputPath, outputPath, signatureImagePath, pageIndex, x, y, width, height) {
   const bytes = fs.readFileSync(inputPath);
-  const signatureBytes = fs.readFileSync(signatureImagePath);
-  
+  let signatureBytes = fs.readFileSync(signatureImagePath);
+
   const doc = await PDFDocument.load(bytes);
   let signatureImage;
-  
-  if (signatureImagePath.endsWith('.png')) {
+  let lowerPath = signatureImagePath.toLowerCase();
+
+  if (!lowerPath.endsWith('.png') && !lowerPath.endsWith('.jpg') && !lowerPath.endsWith('.jpeg')) {
+    const Jimp = require('jimp');
+    const img = await Jimp.read(signatureBytes);
+    signatureBytes = await img.getBufferAsync(Jimp.MIME_PNG);
+    lowerPath = '.png';
+  }
+
+  if (lowerPath.endsWith('.png')) {
     signatureImage = await doc.embedPng(signatureBytes);
   } else {
     signatureImage = await doc.embedJpg(signatureBytes);
@@ -161,9 +169,17 @@ async function sign(inputPath, outputPath, signatureImagePath, pageIndex, x, y, 
 async function imagesToPdf(imagePaths, outputPath) {
   const doc = await PDFDocument.create();
   for (const imgPath of imagePaths) {
-    const bytes = fs.readFileSync(imgPath);
+    let bytes = fs.readFileSync(imgPath);
+    let lowerPath = imgPath.toLowerCase();
+
+    if (!lowerPath.endsWith('.png') && !lowerPath.endsWith('.jpg') && !lowerPath.endsWith('.jpeg')) {
+      const Jimp = require('jimp');
+      const img = await Jimp.read(bytes);
+      bytes = await img.getBufferAsync(Jimp.MIME_PNG);
+      lowerPath = '.png';
+    }
+
     let image;
-    const lowerPath = imgPath.toLowerCase();
     if (lowerPath.endsWith('.png')) {
       image = await doc.embedPng(bytes);
     } else if (lowerPath.endsWith('.jpg') || lowerPath.endsWith('.jpeg')) {
@@ -171,7 +187,7 @@ async function imagesToPdf(imagePaths, outputPath) {
     } else {
       continue; // Skip unsupported
     }
-    
+
     // Scale to A4 size
     const page = doc.addPage(PageSizes.A4);
     const { width, height } = image.scaleToFit(page.getWidth() - 40, page.getHeight() - 40);
@@ -191,12 +207,12 @@ async function addWatermark(inputPath, outputPath, text) {
   const doc = await PDFDocument.load(bytes);
   const pages = doc.getPages();
   const font = await doc.embedFont(StandardFonts.HelveticaBold);
-  
+
   for (const page of pages) {
     const { width, height } = page.getSize();
     const textSize = 50;
     const textWidth = font.widthOfTextAtSize(text, textSize);
-    
+
     page.drawText(text, {
       x: width / 2 - textWidth / 2,
       y: height / 2,
@@ -216,7 +232,7 @@ async function addPageNumbers(inputPath, outputPath) {
   const doc = await PDFDocument.load(bytes);
   const pages = doc.getPages();
   const font = await doc.embedFont(StandardFonts.Helvetica);
-  
+
   pages.forEach((page, idx) => {
     const text = `Page ${idx + 1} of ${pages.length}`;
     const textSize = 12;
@@ -236,12 +252,12 @@ async function addPageNumbers(inputPath, outputPath) {
 async function editMetadata(inputPath, outputPath, metadata) {
   const bytes = fs.readFileSync(inputPath);
   const doc = await PDFDocument.load(bytes);
-  
+
   if (metadata.title) doc.setTitle(metadata.title);
   if (metadata.author) doc.setAuthor(metadata.author);
   if (metadata.subject) doc.setSubject(metadata.subject);
   if (metadata.keywords) doc.setKeywords(metadata.keywords.split(',').map(k => k.trim()));
-  
+
   fs.writeFileSync(outputPath, await doc.save());
 }
 
@@ -249,10 +265,10 @@ async function editMetadata(inputPath, outputPath, metadata) {
 async function flattenForm(inputPath, outputPath) {
   const bytes = fs.readFileSync(inputPath);
   const doc = await PDFDocument.load(bytes);
-  
+
   const form = doc.getForm();
   form.flatten();
-  
+
   fs.writeFileSync(outputPath, await doc.save());
 }
 
@@ -312,10 +328,10 @@ async function cropPages(inputPath, outputPath, marginTop, marginRight, marginBo
   const bytes = fs.readFileSync(inputPath);
   const doc = await PDFDocument.load(bytes);
   const pages = doc.getPages();
-  const t = parseFloat(marginTop)   || 0;
-  const r = parseFloat(marginRight)  || 0;
+  const t = parseFloat(marginTop) || 0;
+  const r = parseFloat(marginRight) || 0;
   const b = parseFloat(marginBottom) || 0;
-  const l = parseFloat(marginLeft)   || 0;
+  const l = parseFloat(marginLeft) || 0;
 
   for (const page of pages) {
     const { x, y, width, height } = page.getMediaBox();
@@ -358,7 +374,7 @@ async function addHeaderFooter(inputPath, outputPath, header, footer) {
   fs.writeFileSync(outputPath, await doc.save());
 }
 
-module.exports = { 
+module.exports = {
   merge, split, rotate, deletePages, extractPages, insertPages, sign, parsePageRanges,
   imagesToPdf, addWatermark, addPageNumbers, editMetadata, flattenForm,
   compress, reversePages, duplicatePages, addBlankPage, cropPages, addHeaderFooter,

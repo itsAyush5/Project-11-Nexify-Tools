@@ -4,8 +4,8 @@ const cloudConvert = require('../engines/cloudConvert');
 const localConvert = require('../engines/localConvert');
 const capabilityEngine = require('./capabilityEngine');
 
-// Image extensions Jimp can handle natively (no API needed)
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif', 'webp'];
+const VIDEO_AUDIO_EXTS = [...capabilityEngine.FORMAT_CATEGORIES.video, ...capabilityEngine.FORMAT_CATEGORIES.audio].map(e => e.replace('.', ''));
 
 async function execute(jobId, fileId, targetFormat, jobs) {
   const job = jobs.get(jobId);
@@ -40,7 +40,7 @@ async function execute(jobId, fileId, targetFormat, jobs) {
         await localConvert.convert(inputPath, outputPath, `.${inputExt}`, `.${outExt}`);
         localSuccess = true;
       }
-      
+
       // ENGINE 2: Jimp for image-to-image/SVG
       else if (IMAGE_EXTS.includes(inputExt) && IMAGE_EXTS.includes(outExt)) {
         if (outExt === 'svg') {
@@ -78,12 +78,12 @@ async function execute(jobId, fileId, targetFormat, jobs) {
         const ffmpeg = require('fluent-ffmpeg');
         job.progress = 20;
         await new Promise((resolve, reject) => {
-            ffmpeg(inputPath)
-                .output(outputPath)
-                .on('progress', (p) => { job.progress = Math.min(95, 20 + Math.floor(p.percent || 0)); })
-                .on('end', resolve)
-                .on('error', reject)
-                .run();
+          ffmpeg(inputPath)
+            .output(outputPath)
+            .on('progress', (p) => { job.progress = Math.min(95, 20 + Math.floor(p.percent || 0)); })
+            .on('end', resolve)
+            .on('error', reject)
+            .run();
         });
         localSuccess = true;
       }
@@ -116,7 +116,7 @@ async function execute(jobId, fileId, targetFormat, jobs) {
         console.log(`[NexConvert] Job ${jobId} COMPLETED via CloudConvert fallback.`);
         return;
       }
-      
+
       throw new Error('The Pro Engine encountered an error with this specific file.');
     }
 

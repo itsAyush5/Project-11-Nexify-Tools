@@ -158,10 +158,10 @@ async function textToPdf(text, title) {
   const fontSize = 10;
   const margin = 50;
   const { width, height } = { width: 595.28, height: 841.89 }; // A4
-  
+
   const lines = text.split('\n');
   const maxCharsPerLine = 85;
-  
+
   let page = pdfDoc.addPage([width, height]);
   let y = height - margin;
 
@@ -170,12 +170,12 @@ async function textToPdf(text, title) {
     while (line.length > 0) {
       const chunk = line.substring(0, maxCharsPerLine);
       line = line.substring(maxCharsPerLine);
-      
+
       if (y < margin + fontSize) {
         page = pdfDoc.addPage([width, height]);
         y = height - margin;
       }
-      
+
       page.drawText(chunk, { x: margin, y, size: fontSize, font, color: rgb(0.1, 0.1, 0.1) });
       y -= fontSize + 2;
     }
@@ -193,8 +193,10 @@ function canHandle(inputExt, outputExt) {
   const inp = inputExt.replace('.', '').toLowerCase();
   const out = outputExt.replace('.', '').toLowerCase();
 
-  const isTextIn = DATA_EXTS.includes(inp) || TEXT_EXTS.includes(inp) || CODE_EXTS.includes(inp) || inp === 'docx';
+  const isTextIn = DATA_EXTS.includes(inp) || TEXT_EXTS.includes(inp) || CODE_EXTS.includes(inp);
   const isTextOut = DATA_EXTS.includes(out) || TEXT_EXTS.includes(out) || CODE_EXTS.includes(out) || out === 'pdf';
+
+  if (inp === 'docx') return ['pdf', 'html', 'txt'].includes(out);
 
   if (isTextIn && isTextOut) return true;
 
@@ -220,9 +222,9 @@ async function convert(inputPath, outputPath, inputExt, outputExt) {
       return;
     }
     if (out === 'txt') {
-        const result = await mammoth.extractRawText({ path: inputPath });
-        writeText(outputPath, result.value);
-        return;
+      const result = await mammoth.extractRawText({ path: inputPath });
+      writeText(outputPath, result.value);
+      return;
     }
   }
 
@@ -244,7 +246,7 @@ async function convert(inputPath, outputPath, inputExt, outputExt) {
       return;
     }
     if (out === 'html') {
-      writeText(outputPath, `<!DOCTYPE html><html><head><title>${path.basename(inputPath)}</title></head><body><pre><code class="language-${inp}">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</code></pre></body></html>`);
+      writeText(outputPath, `<!DOCTYPE html><html><head><title>${path.basename(inputPath)}</title></head><body><pre><code class="language-${inp}">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre></body></html>`);
       return;
     }
     // Code → different code extension (rename/passthrough)

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Upload, Download, GitMerge, Scissors, RotateCw, Trash2, FileOutput, FilePlus, 
-  X, Plus, ArrowUp, ArrowDown, Lock, Unlock, PenTool, Shield, FileImage, 
-  Droplet, ListOrdered, Tags, Layers, Minimize2, FlipVertical, Copy, 
+import {
+  Upload, Download, GitMerge, Scissors, RotateCw, Trash2, FileOutput, FilePlus,
+  X, Plus, ArrowUp, ArrowDown, Lock, Unlock, PenTool, Shield, FileImage,
+  Droplet, ListOrdered, Tags, Layers, Minimize2, FlipVertical, Copy,
   PlusSquare, Crop, AlignCenter, ChevronRight, Search, Sparkles, FileText,
   ShieldCheck, Layout, Activity, Info, RefreshCw
 } from 'lucide-react';
@@ -20,32 +20,31 @@ const categories = [
 
 const tools = [
   // Edit & Modify
-  { id: 'merge',   icon: GitMerge,   label: 'Merge PDFs',      color: '#6366f1', cat: 'edit', desc: 'Combine multiple PDFs into one file' },
-  { id: 'split',   icon: Scissors,   label: 'Split PDF',       color: '#8b5cf6', cat: 'edit', desc: 'Divide a PDF into multiple files by page ranges' },
-  { id: 'rotate',  icon: RotateCw,   label: 'Rotate Pages',    color: '#ec4899', cat: 'edit', desc: 'Rotate specific pages or the whole document' },
-  { id: 'delete',  icon: Trash2,     label: 'Delete Pages',    color: '#ef4444', cat: 'edit', desc: 'Remove specific pages from a PDF' },
-  { id: 'extract', icon: FileOutput, label: 'Extract Pages',   color: '#f59e0b', cat: 'edit', desc: 'Pull specific pages into a new PDF' },
-  { id: 'insert',  icon: FilePlus,   label: 'Insert Pages',    color: '#22c55e', cat: 'edit', desc: 'Insert pages from another PDF at a chosen position' },
-  { id: 'reverse',    icon: FlipVertical, label: 'Reverse Pages',   color: '#a855f7', cat: 'edit', desc: 'Flip the entire page order of a PDF' },
-  { id: 'duplicate',  icon: Copy,         label: 'Duplicate Pages', color: '#06b6d4', cat: 'edit', desc: 'Clone specific pages and append them' },
-  { id: 'blank',      icon: PlusSquare,   label: 'Add Blank Page',  color: '#f59e0b', cat: 'edit', desc: 'Insert an empty page at any position' },
-  { id: 'crop',       icon: Crop,         label: 'Crop Pages',      color: '#f43f5e', cat: 'edit', desc: 'Trim margins from all pages' },
-  
+  { id: 'merge', icon: GitMerge, label: 'Merge PDFs', color: '#6366f1', cat: 'edit', desc: 'Combine multiple PDFs into one file' },
+  { id: 'split', icon: Scissors, label: 'Split PDF', color: '#8b5cf6', cat: 'edit', desc: 'Divide a PDF into multiple files by page ranges' },
+  { id: 'rotate', icon: RotateCw, label: 'Rotate Pages', color: '#ec4899', cat: 'edit', desc: 'Rotate specific pages or the whole document' },
+  { id: 'delete', icon: Trash2, label: 'Delete Pages', color: '#ef4444', cat: 'edit', desc: 'Remove specific pages from a PDF' },
+  { id: 'extract', icon: FileOutput, label: 'Extract Pages', color: '#f59e0b', cat: 'edit', desc: 'Pull specific pages into a new PDF' },
+  { id: 'insert', icon: FilePlus, label: 'Insert Pages', color: '#22c55e', cat: 'edit', desc: 'Insert pages from another PDF at a chosen position' },
+  { id: 'reverse', icon: FlipVertical, label: 'Reverse Pages', color: '#a855f7', cat: 'edit', desc: 'Flip the entire page order of a PDF' },
+  { id: 'duplicate', icon: Copy, label: 'Duplicate Pages', color: '#06b6d4', cat: 'edit', desc: 'Clone specific pages and append them' },
+  { id: 'blank', icon: PlusSquare, label: 'Add Blank Page', color: '#f59e0b', cat: 'edit', desc: 'Insert an empty page at any position' },
+  { id: 'crop', icon: Crop, label: 'Crop Pages', color: '#f43f5e', cat: 'edit', desc: 'Trim margins from all pages' },
+
   // Security
-  { id: 'protect', icon: Lock,       label: 'Protect PDF',     color: '#f43f5e', cat: 'security', desc: 'Add password protection to your PDF' },
-  { id: 'unlock',  icon: Unlock,     label: 'Unlock PDF',      color: '#fbbf24', cat: 'security', desc: 'Remove password protection from a PDF' },
-  { id: 'flatten',    icon: Layers,       label: 'Flatten PDF',     color: '#ef4444', cat: 'security', desc: 'Lock interactive forms so they are uneditable' },
-  
+  { id: 'protect', icon: Lock, label: 'Protect PDF', color: '#f43f5e', cat: 'security', desc: 'Add password protection to your PDF' },
+  { id: 'unlock', icon: Unlock, label: 'Unlock PDF', color: '#fbbf24', cat: 'security', desc: 'Remove password protection from a PDF' },
+  { id: 'flatten', icon: Layers, label: 'Flatten PDF', color: '#ef4444', cat: 'security', desc: 'Lock interactive forms so they are uneditable' },
+
   // Signing
-  { id: 'sign',    icon: PenTool,    label: 'Sign PDF',        color: '#8b5cf6', cat: 'signing', desc: 'Place a signature image on any page' },
-  { id: 'esign',   icon: Shield,     label: 'eSign',           color: '#10b981', cat: 'signing', desc: 'Draw and place your digital signature' },
-  
+  { id: 'sign', icon: PenTool, label: 'Sign PDF', color: '#8b5cf6', cat: 'signing', desc: 'Place a signature image on any page' },
+
   // Optimize & Tools
-  { id: 'compress',   icon: Minimize2,    label: 'Compress PDF',    color: '#22c55e', cat: 'optimize', desc: 'Reduce file size with object stream compression' },
-  { id: 'watermark', icon: Droplet,  label: 'Watermark',       color: '#06b6d4', cat: 'optimize', desc: 'Add a diagonal text watermark across all pages' },
-  { id: 'numbers', icon: ListOrdered,label: 'Page Numbers',    color: '#8b5cf6', cat: 'optimize', desc: 'Automatically add page numbers to the bottom' },
-  { id: 'metadata',icon: Tags,       label: 'Metadata',        color: '#eab308', cat: 'optimize', desc: 'Edit the internal properties (Title, Author, etc.)' },
-  { id: 'headerfooter', icon: AlignCenter,label: 'Header & Footer', color: '#10b981', cat: 'optimize', desc: 'Add text header and/or footer to all pages' },
+  { id: 'compress', icon: Minimize2, label: 'Compress PDF', color: '#22c55e', cat: 'optimize', desc: 'Reduce file size with object stream compression' },
+  { id: 'watermark', icon: Droplet, label: 'Watermark', color: '#06b6d4', cat: 'optimize', desc: 'Add a diagonal text watermark across all pages' },
+  { id: 'numbers', icon: ListOrdered, label: 'Page Numbers', color: '#8b5cf6', cat: 'optimize', desc: 'Automatically add page numbers to the bottom' },
+  { id: 'metadata', icon: Tags, label: 'Metadata', color: '#eab308', cat: 'optimize', desc: 'Edit the internal properties (Title, Author, etc.)' },
+  { id: 'headerfooter', icon: AlignCenter, label: 'Header & Footer', color: '#10b981', cat: 'optimize', desc: 'Add text header and/or footer to all pages' },
 ];
 
 // ─── Utility Components ───────────────────────────────────────────────────────
@@ -166,8 +165,8 @@ function MergeTool() {
     setFiles(prev => [...prev, ...newFiles]);
   };
   const remove = (i) => setFiles(f => f.filter((_, idx) => idx !== i));
-  const moveUp = (i) => setFiles(f => { const a = [...f]; [a[i-1], a[i]] = [a[i], a[i-1]]; return a; });
-  const moveDown = (i) => setFiles(f => { const a = [...f]; [a[i], a[i+1]] = [a[i+1], a[i]]; return a; });
+  const moveUp = (i) => setFiles(f => { const a = [...f];[a[i - 1], a[i]] = [a[i], a[i - 1]]; return a; });
+  const moveDown = (i) => setFiles(f => { const a = [...f];[a[i], a[i + 1]] = [a[i + 1], a[i]]; return a; });
 
   const run = async () => {
     if (files.length < 2) { setError('Add at least 2 PDFs to merge'); return; }
@@ -184,7 +183,7 @@ function MergeTool() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <DropZone label="Add PDFs to Merge" onFile={addFiles} file={files.length > 0 ? files : null} multiple />
-      
+
       {files.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', marginBottom: '0.25rem' }}>File Sequence ({files.length} files)</p>
@@ -198,9 +197,9 @@ function MergeTool() {
                 <div style={{ width: 20, height: 20, borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800 }}>{i + 1}</div>
                 <span style={{ flex: 1, fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
                 <div style={{ display: 'flex', gap: '0.1rem' }}>
-                  <button onClick={() => moveUp(i)} disabled={i === 0} style={{ padding: '0.4rem', background: 'none', border: 'none', color: i === 0 ? 'rgba(255,255,255,0.1)' : '#818cf8', cursor: 'pointer' }}><ArrowUp size={14}/></button>
-                  <button onClick={() => moveDown(i)} disabled={i === files.length - 1} style={{ padding: '0.4rem', background: 'none', border: 'none', color: i === files.length - 1 ? 'rgba(255,255,255,0.1)' : '#818cf8', cursor: 'pointer' }}><ArrowDown size={14}/></button>
-                  <button onClick={() => remove(i)} style={{ padding: '0.4rem', background: 'none', border: 'none', color: '#f87171', cursor: 'pointer' }}><X size={14}/></button>
+                  <button onClick={() => moveUp(i)} disabled={i === 0} style={{ padding: '0.4rem', background: 'none', border: 'none', color: i === 0 ? 'rgba(255,255,255,0.1)' : '#818cf8', cursor: 'pointer' }}><ArrowUp size={14} /></button>
+                  <button onClick={() => moveDown(i)} disabled={i === files.length - 1} style={{ padding: '0.4rem', background: 'none', border: 'none', color: i === files.length - 1 ? 'rgba(255,255,255,0.1)' : '#818cf8', cursor: 'pointer' }}><ArrowDown size={14} /></button>
+                  <button onClick={() => remove(i)} style={{ padding: '0.4rem', background: 'none', border: 'none', color: '#f87171', cursor: 'pointer' }}><X size={14} /></button>
                 </div>
               </motion.div>
             ))}
@@ -499,6 +498,159 @@ function SimpleTool({ icon: Icon, label, endpoint, outputName, desc }) {
   );
 }
 
+function DuplicateTool() {
+  const [file, setFile] = useState(null);
+  const [pages, setPages] = useState('all');
+  const [times, setTimes] = useState(1);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const run = async () => {
+    if (!file || !pages) { setError('Select a PDF and specify pages'); return; }
+    setBusy(true); setError('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('pages', pages);
+      fd.append('times', times);
+      const blob = await postForm('/pdf/duplicate', fd);
+      downloadBlob(blob, 'duplicated.pdf');
+    } catch (e) { setError(e.message); }
+    setBusy(false);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <DropZone label="Upload PDF to Duplicate Pages" onFile={setFile} file={file} />
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <ToolInput label="Pages (e.g. 1-3, 5)" value={pages} onChange={e => setPages(e.target.value)} />
+        <ToolInput label="Times" type="number" min="1" value={times} onChange={e => setTimes(e.target.value)} />
+      </div>
+      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', textAlign: 'center' }}>{error}</p>}
+      <button className="btn btn-primary" style={{ height: '3.2rem', borderRadius: '14px' }} onClick={run} disabled={busy || !file}>
+        {busy ? <RefreshCw className="spin" size={18} /> : <><Copy size={18} /> Duplicate Pages</>}
+      </button>
+    </div>
+  );
+}
+
+function BlankPageTool() {
+  const [file, setFile] = useState(null);
+  const [position, setPosition] = useState(1);
+  const [pageSize, setPageSize] = useState('A4');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const run = async () => {
+    if (!file) { setError('Select a PDF'); return; }
+    setBusy(true); setError('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('position', position);
+      fd.append('pageSize', pageSize);
+      const blob = await postForm('/pdf/blank-page', fd);
+      downloadBlob(blob, 'with-blank-page.pdf');
+    } catch (e) { setError(e.message); }
+    setBusy(false);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <DropZone label="Upload PDF" onFile={setFile} file={file} />
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <ToolInput label="Insert after position" type="number" min="1" value={position} onChange={e => setPosition(e.target.value)} />
+        <ToolInput label="Page Size (e.g. A4, Letter)" value={pageSize} onChange={e => setPageSize(e.target.value)} />
+      </div>
+      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', textAlign: 'center' }}>{error}</p>}
+      <button className="btn btn-primary" style={{ height: '3.2rem', borderRadius: '14px' }} onClick={run} disabled={busy || !file}>
+        {busy ? <RefreshCw className="spin" size={18} /> : <><PlusSquare size={18} /> Add Blank Page</>}
+      </button>
+    </div>
+  );
+}
+
+function CropTool() {
+  const [file, setFile] = useState(null);
+  const [marginTop, setMarginTop] = useState(0);
+  const [marginRight, setMarginRight] = useState(0);
+  const [marginBottom, setMarginBottom] = useState(0);
+  const [marginLeft, setMarginLeft] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const run = async () => {
+    if (!file) { setError('Select a PDF'); return; }
+    setBusy(true); setError('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('marginTop', marginTop);
+      fd.append('marginRight', marginRight);
+      fd.append('marginBottom', marginBottom);
+      fd.append('marginLeft', marginLeft);
+      const blob = await postForm('/pdf/crop', fd);
+      downloadBlob(blob, 'cropped.pdf');
+    } catch (e) { setError(e.message); }
+    setBusy(false);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <DropZone label="Upload PDF to Crop" onFile={setFile} file={file} />
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <ToolInput label="Top Margin" type="number" value={marginTop} onChange={e => setMarginTop(e.target.value)} />
+        <ToolInput label="Right Margin" type="number" value={marginRight} onChange={e => setMarginRight(e.target.value)} />
+      </div>
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <ToolInput label="Bottom Margin" type="number" value={marginBottom} onChange={e => setMarginBottom(e.target.value)} />
+        <ToolInput label="Left Margin" type="number" value={marginLeft} onChange={e => setMarginLeft(e.target.value)} />
+      </div>
+      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', textAlign: 'center' }}>{error}</p>}
+      <button className="btn btn-primary" style={{ height: '3.2rem', borderRadius: '14px' }} onClick={run} disabled={busy || !file}>
+        {busy ? <RefreshCw className="spin" size={18} /> : <><Crop size={18} /> Crop Pages</>}
+      </button>
+    </div>
+  );
+}
+
+function HeaderFooterTool() {
+  const [file, setFile] = useState(null);
+  const [header, setHeader] = useState('');
+  const [footer, setFooter] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const run = async () => {
+    if (!file) { setError('Select a PDF'); return; }
+    if (!header && !footer) { setError('Enter a header or footer text'); return; }
+    setBusy(true); setError('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('header', header);
+      fd.append('footer', footer);
+      const blob = await postForm('/pdf/header-footer', fd);
+      downloadBlob(blob, 'header-footer.pdf');
+    } catch (e) { setError(e.message); }
+    setBusy(false);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <DropZone label="Upload PDF" onFile={setFile} file={file} />
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <ToolInput label="Header Text" value={header} onChange={e => setHeader(e.target.value)} />
+        <ToolInput label="Footer Text" value={footer} onChange={e => setFooter(e.target.value)} />
+      </div>
+      {error && <p style={{ color: '#f87171', fontSize: '0.8rem', textAlign: 'center' }}>{error}</p>}
+      <button className="btn btn-primary" style={{ height: '3.2rem', borderRadius: '14px' }} onClick={run} disabled={busy || !file}>
+        {busy ? <RefreshCw className="spin" size={18} /> : <><AlignCenter size={18} /> Apply</>}
+      </button>
+    </div>
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function PdfTools() {
@@ -530,6 +682,10 @@ export default function PdfTools() {
       case 'metadata': return <MetadataTool />;
       case 'flatten': return <SimpleTool icon={Layers} label="Flatten PDF" endpoint="/pdf/flatten" outputName="flattened.pdf" desc="Converts form fields to static text elements." />;
       case 'numbers': return <SimpleTool icon={ListOrdered} label="Add Page Numbers" endpoint="/pdf/page-numbers" outputName="numbered.pdf" desc="Adds page numbers to the bottom center of all pages." />;
+      case 'duplicate': return <DuplicateTool />;
+      case 'blank': return <BlankPageTool />;
+      case 'crop': return <CropTool />;
+      case 'headerfooter': return <HeaderFooterTool />;
       default: return (
         <div style={{ textAlign: 'center', padding: '3rem' }}>
           <Info size={32} color="rgba(255,255,255,0.2)" style={{ marginBottom: '1rem' }} />
@@ -541,7 +697,7 @@ export default function PdfTools() {
 
   return (
     <div style={{ minHeight: '80vh', display: 'flex', gap: '2.5rem', position: 'relative' }}>
-      
+
       {/* ── Sidebar Navigation ── */}
       <aside style={{ width: '260px', flexShrink: 0 }}>
         <div style={{ position: 'sticky', top: '2rem' }}>
@@ -554,7 +710,7 @@ export default function PdfTools() {
 
           <div style={{ position: 'relative', marginBottom: '2rem' }}>
             <Search size={14} style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)' }} />
-            <input 
+            <input
               type="text" placeholder="Search tools..." value={search} onChange={e => setSearch(e.target.value)}
               style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '0.8rem 1rem 0.8rem 2.8rem', color: '#fff', fontSize: '0.85rem', outline: 'none' }}
             />
@@ -620,7 +776,7 @@ export default function PdfTools() {
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
                 >
                   <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: '100px', height: '100px', background: tool.color, filter: 'blur(50px)', opacity: 0.1, pointerEvents: 'none' }} />
-                  
+
                   <div>
                     <div style={{ width: 48, height: 48, borderRadius: '14px', background: `${tool.color}15`, border: `1px solid ${tool.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
                       <tool.icon size={22} color={tool.color} />
@@ -642,7 +798,7 @@ export default function PdfTools() {
               style={{ maxWidth: '700px', margin: '0 auto' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
-                <button 
+                <button
                   onClick={() => setActiveTool(null)}
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.6rem 1rem', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}
                 >
